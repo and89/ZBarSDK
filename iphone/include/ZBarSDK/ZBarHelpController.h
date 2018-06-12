@@ -40,7 +40,7 @@
                                 UIAlertViewDelegate >
 {
     NSString *reason;
-    id delegate;
+    id __weak delegate;
     UIWebView *webView;
     UIToolbar *toolbar;
     UIBarButtonItem *doneBtn, *backBtn, *space;
@@ -48,10 +48,10 @@
     NSUInteger orientations;
 }
 
-@property (nonatomic, assign) id<ZBarHelpDelegate> delegate;
+@property (nonatomic, weak) id<ZBarHelpDelegate> delegate;
 
 // designated initializer
-- (id) initWithReason: (NSString*) reason;
+- (instancetype) initWithReason: (NSString*) reason NS_DESIGNATED_INITIALIZER;
 
 - (BOOL) isInterfaceOrientationSupported: (UIInterfaceOrientation) orientation;
 - (void) setInterfaceOrientation: (UIInterfaceOrientation) orientation

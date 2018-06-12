@@ -30,7 +30,7 @@
 
 @synthesize delegate;
 
-- (id) initWithReason: (NSString*) _reason
+- (instancetype) initWithReason: (NSString*) _reason
 {
     self = [super init];
     if(!self)
@@ -38,37 +38,29 @@
 
     if(!_reason)
         _reason = @"INFO";
-    reason = [_reason retain];
+    reason = _reason;
     return(self);
 }
 
-- (id) init
+- (instancetype) init
 {
     return([self initWithReason: nil]);
 }
 
 - (void) cleanup
 {
-    [toolbar release];
     toolbar = nil;
-    [webView release];
     webView = nil;
-    [doneBtn release];
     doneBtn = nil;
-    [backBtn release];
     backBtn = nil;
-    [space release];
     space = nil;
 }
 
 - (void) dealloc
 {
     [self cleanup];
-    [reason release];
     reason = nil;
-    [linkURL release];
     linkURL = nil;
-    [super dealloc];
 }
 
 - (void) viewDidLoad
@@ -122,7 +114,7 @@
                 target: nil
                 action: nil];
 
-    toolbar.items = [NSArray arrayWithObjects: space, doneBtn, nil];
+    toolbar.items = @[space, doneBtn];
 
     [view addSubview: toolbar];
 
@@ -222,13 +214,13 @@
         [UIView commitAnimations];
     }
 
-    BOOL canGoBack = [view canGoBack];
+    BOOL canGoBack = view.canGoBack;
     NSArray *items = toolbar.items;
-    if(canGoBack != ([items objectAtIndex: 0] == backBtn)) {
+    if(canGoBack != (items[0] == backBtn)) {
         if(canGoBack)
-            items = [NSArray arrayWithObjects: backBtn, space, doneBtn, nil];
+            items = @[backBtn, space, doneBtn];
         else
-            items = [NSArray arrayWithObjects: space, doneBtn, nil];
+            items = @[space, doneBtn];
         [toolbar setItems: items
                  animated: YES];
     }
@@ -238,11 +230,11 @@
   shouldStartLoadWithRequest: (NSURLRequest*) req
               navigationType: (UIWebViewNavigationType) nav
 {
-    NSURL *url = [req URL];
-    if([url isFileURL])
+    NSURL *url = req.URL;
+    if(url.fileURL)
         return(YES);
 
-    linkURL = [url retain];
+    linkURL = url;
     UIAlertView *alert =
         [[UIAlertView alloc]
             initWithTitle: @"Open External Link"
@@ -252,7 +244,6 @@
             otherButtonTitles: @"OK", nil];
     alert.delegate = self;
     [alert show];
-    [alert release];
     return(NO);
 }
 

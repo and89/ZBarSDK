@@ -48,8 +48,8 @@
 {
 #if !TARGET_IPHONE_SIMULATOR
     AVCaptureVideoDataOutput *captureOutput;
-    id<ZBarCaptureDelegate> captureDelegate;
-    ZBarImageScanner *scanner;
+    id<ZBarCaptureDelegate> __weak captureDelegate;
+    ZBarImageScanner *__weak scanner;
     CGRect scanCrop;
     CGSize size;
     CGFloat framesPerSecond;
@@ -67,7 +67,7 @@
 }
 
 // supply a pre-configured image scanner
-- (id) initWithImageScanner: (ZBarImageScanner*) imageScanner;
+- (instancetype) initWithImageScanner: (ZBarImageScanner*) imageScanner NS_DESIGNATED_INITIALIZER;
 
 // this must be called before the session is started
 - (void) willStartRunning;
@@ -86,10 +86,10 @@
 @property (nonatomic, readonly) AVCaptureOutput *captureOutput;
 
 // delegate is notified of decode results and symbol tracking.
-@property (nonatomic, assign) id<ZBarCaptureDelegate> captureDelegate;
+@property (nonatomic, weak) id<ZBarCaptureDelegate> captureDelegate;
 
 // access to image scanner for configuration.
-@property (nonatomic, readonly) ZBarImageScanner *scanner;
+@property (weak, nonatomic, readonly) ZBarImageScanner *scanner;
 
 // region of image to scan in normalized coordinates.
 // NB horizontal crop currently ignored...

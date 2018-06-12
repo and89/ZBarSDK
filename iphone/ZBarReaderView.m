@@ -34,7 +34,7 @@
 
 @synthesize readerDelegate, tracksSymbols, trackingColor, torchMode, showsFPS,
     zoom, maxZoom, scanCrop, previewTransform, captureReader;
-@dynamic scanner, allowsPinchZoom, enableCache, device, session;
+@dynamic scanner, allowsPinchZoom, enableCache, device;
 
 + (id) alloc
 {
@@ -76,8 +76,7 @@
     tracking.backgroundColor = [UIColor clearColor].CGColor;
     [overlay addSublayer: tracking];
 
-    trackingColor = [[UIColor greenColor]
-                        retain];
+    trackingColor = [UIColor greenColor];
     tracking.borderColor = trackingColor.CGColor;
 
     fpsView = [UIView new];
@@ -119,7 +118,7 @@
     [self addGestureRecognizer: pinch];
 }
 
-- (id) initWithImageScanner: (ZBarImageScanner*) scanner
+- (instancetype) initWithImageScanner: (ZBarImageScanner*) scanner
 {
     self = [super initWithFrame: CGRectMake(0, 0, 320, 426)];
     if(!self)
@@ -136,11 +135,10 @@
     return(self);
 }
 
-- (id) init
+- (instancetype) init
 {
     ZBarImageScanner *scanner =
-        [[ZBarImageScanner new]
-            autorelease];
+        [ZBarImageScanner new];
     self = [self initWithImageScanner: scanner];
     if(!self)
         return(nil);
@@ -154,14 +152,13 @@
     return(self);
 }
 
-- (id) initWithCoder: (NSCoder*) decoder
+- (instancetype) initWithCoder: (NSCoder*) decoder
 {
     self = [super initWithCoder: decoder];
     if(!self)
         return(nil);
     ZBarImageScanner *scanner =
-        [[ZBarImageScanner new]
-            autorelease];
+        [ZBarImageScanner new];
     [self _initWithImageScanner: scanner];
 
     [scanner setSymbology: 0
@@ -176,23 +173,14 @@
 - (void) dealloc
 {
     [preview removeFromSuperlayer];
-    [preview release];
     preview = nil;
-    [overlay release];
     overlay = nil;
-    [cropLayer release];
     cropLayer = nil;
-    [tracking release];
     tracking = nil;
-    [trackingColor release];
     trackingColor = nil;
-    [fpsLabel release];
     fpsLabel = nil;
-    [fpsView release];
     fpsView = nil;
-    [pinch release];
     pinch = nil;
-    [super dealloc];
 }
 
 - (void) resetTracking
@@ -400,8 +388,6 @@ static inline CGFloat rotationForInterfaceOrientation (int orient)
 {
     if(!color)
         return;
-    [color retain];
-    [trackingColor release];
     trackingColor = color;
     tracking.borderColor = color.CGColor;
 }
@@ -546,7 +532,7 @@ static inline CGFloat rotationForInterfaceOrientation (int orient)
     CABasicAnimation *on =
         [CABasicAnimation animationWithKeyPath: @"opacity"];
     on.fromValue = [NSNumber numberWithDouble: current.opacity];
-    on.toValue = [NSNumber numberWithDouble: 1];
+    on.toValue = @1.0;
     on.duration = .2;
     on.timingFunction = linear;
     on.fillMode = kCAFillModeForwards;
@@ -555,15 +541,15 @@ static inline CGFloat rotationForInterfaceOrientation (int orient)
     CABasicAnimation *off = nil;
     if(!TARGET_IPHONE_SIMULATOR) {
         off = [CABasicAnimation animationWithKeyPath: @"opacity"];
-        off.fromValue = [NSNumber numberWithDouble: 1];
-        off.toValue = [NSNumber numberWithDouble: 0];
+        off.fromValue = @1.0;
+        off.toValue = @0.0;
         off.beginTime = .5;
         off.duration = .5;
         off.timingFunction = linear;
     }
 
     CAAnimationGroup *group = [CAAnimationGroup animation];
-    group.animations = [NSArray arrayWithObjects: resize, move, on, off, nil];
+    group.animations = @[resize, move, on, off];
     group.duration = 1;
     group.fillMode = kCAFillModeForwards;
     group.removedOnCompletion = !TARGET_IPHONE_SIMULATOR;

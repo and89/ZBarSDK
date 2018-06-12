@@ -40,7 +40,7 @@
 @interface ZBarReaderViewImpl
     : ZBarReaderView
 {
-    ZBarImageScanner *scanner;
+    __weak ZBarImageScanner *scanner;
     UILabel *simLabel;
     UIImage *scanImage;
     CALayer *previewImage;
@@ -55,7 +55,7 @@
 - (void) _initWithImageScanner: (ZBarImageScanner*) _scanner
 {
     [super _initWithImageScanner: _scanner];
-    scanner = [_scanner retain];
+    scanner = _scanner;
 
     [self initSubviews];
 }
@@ -86,13 +86,9 @@
 
 - (void) dealloc
 {
-    [scanner release];
     scanner = nil;
-    [simLabel release];
     simLabel = nil;
-    [previewImage release];
     previewImage = nil;
-    [super dealloc];
 }
 
 - (AVCaptureDevice*) device
@@ -159,7 +155,7 @@
     [CATransaction setDisableActions: YES];
     previewImage.contentsGravity = kCAGravityResizeAspectFill;
     previewImage.transform = CATransform3DMakeRotation(M_PI_2, 0, 0, 1);
-    previewImage.contents = (id)cgimage;
+    previewImage.contents = (__bridge id)cgimage;
     [CATransaction commit];
 
     ZBarImage *zimg =
@@ -175,10 +171,9 @@
     int nsyms = [scanner scanImage: zimg];
     zlog(@"scan image: %@ crop=%@ nsyms=%d",
          NSStringFromCGSize(size), NSStringFromCGRect(zimg.crop), nsyms);
-    [zimg release];
 
     if(nsyms > 0) {
-        scanImage = [image retain];
+        scanImage = image;
         ZBarSymbolSet *syms = scanner.results;
         [self performSelector: @selector(didReadSymbols:)
               withObject: syms
@@ -187,7 +182,6 @@
               withObject: syms
               afterDelay: .001];
     }
-    [image release];
 }
 
 - (void) didReadSymbols: (ZBarSymbolSet*) syms
@@ -196,7 +190,6 @@
         readerView: self
         didReadSymbols: syms
         fromImage: scanImage];
-    [scanImage release];
     scanImage = nil;
 }
 

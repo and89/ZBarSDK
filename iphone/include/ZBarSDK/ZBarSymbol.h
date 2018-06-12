@@ -42,7 +42,9 @@ using namespace zbar;
 @property (readonly, nonatomic) const zbar_symbol_set_t *zbarSymbolSet;
 @property (nonatomic) BOOL filterSymbols;
 
-- (id) initWithSymbolSet: (const zbar_symbol_set_t*) set;
+- (instancetype)init NS_DESIGNATED_INITIALIZER;
+
+- (instancetype) initWithSymbolSet: (const zbar_symbol_set_t*) set NS_DESIGNATED_INITIALIZER;
 
 @end
 
@@ -53,18 +55,20 @@ using namespace zbar;
 }
 
 @property (readonly, nonatomic) zbar_symbol_type_t type;
-@property (readonly, nonatomic) NSString *typeName;
+@property (weak, readonly, nonatomic) NSString *typeName;
 @property (readonly, nonatomic) NSUInteger configMask;
 @property (readonly, nonatomic) NSUInteger modifierMask;
-@property (readonly, nonatomic) NSString *data;
+@property (weak, readonly, nonatomic) NSString *data;
 @property (readonly, nonatomic) int quality;
 @property (readonly, nonatomic) int count;
 @property (readonly, nonatomic) zbar_orientation_t orientation;
-@property (readonly, nonatomic) ZBarSymbolSet *components;
+@property (weak, readonly, nonatomic) ZBarSymbolSet *components;
 @property (readonly, nonatomic) const zbar_symbol_t *zbarSymbol;
 @property (readonly, nonatomic) CGRect bounds;
 
-- (id) initWithSymbol: (const zbar_symbol_t*) symbol;
+- (instancetype)init NS_DESIGNATED_INITIALIZER;
+
+- (instancetype) initWithSymbol: (const zbar_symbol_t*) symbol NS_DESIGNATED_INITIALIZER;
 
 + (NSString*) nameForType: (zbar_symbol_type_t) type;
 

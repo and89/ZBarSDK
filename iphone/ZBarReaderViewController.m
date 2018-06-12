@@ -144,12 +144,10 @@ AVSessionPresetForUIVideoQuality (UIImagePickerControllerQualityType quality)
 + (NSArray*) availableCaptureModesForCameraDevice: (UIImagePickerControllerCameraDevice) camera
 {
     if(![self isCameraDeviceAvailable: camera])
-        return([NSArray array]);
+        return(@[]);
 
     // current reader only supports automatic detection
-    return([NSArray arrayWithObject:
-               [NSNumber numberWithInteger:
-                   UIImagePickerControllerCameraCaptureModeVideo]]);
+    return(@[@(UIImagePickerControllerCameraCaptureModeVideo)]);
 }
 
 - (void) _init
@@ -182,13 +180,12 @@ AVSessionPresetForUIVideoQuality (UIImagePickerControllerQualityType quality)
              to: 3];
 }
 
-- (id) init
+- (instancetype) init
 {
     if(!TARGET_IPHONE_SIMULATOR &&
        !NSClassFromString(@"AVCaptureSession")) {
         // fallback to old interface
         zlog(@"Falling back to ZBarReaderController");
-        [self release];
         return((id)[ZBarReaderController new]);
     }
 
@@ -201,7 +198,7 @@ AVSessionPresetForUIVideoQuality (UIImagePickerControllerQualityType quality)
     return(self);
 }
 
-- (id) initWithCoder: (NSCoder*) decoder
+- (instancetype) initWithCoder: (NSCoder*) decoder
 {
     self = [super initWithCoder: decoder];
     if(!self)
@@ -215,32 +212,23 @@ AVSessionPresetForUIVideoQuality (UIImagePickerControllerQualityType quality)
 {
     [cameraOverlayView removeFromSuperview];
     cameraSim.readerView = nil;
-    [cameraSim release];
     cameraSim = nil;
     readerView.readerDelegate = nil;
-    [readerView release];
     readerView = nil;
-    [controls release];
     controls = nil;
-    [shutter release];
     shutter = nil;
 }
 
 - (void) dealloc
 {
     [self cleanup];
-    [cameraOverlayView release];
     cameraOverlayView = nil;
-    [scanner release];
-    scanner = nil;
-    [super dealloc];
 }
 
 - (void) initControls
 {
     if(!showsZBarControls && controls) {
         [controls removeFromSuperview];
-        [controls release];
         controls = nil;
     }
     if(!showsZBarControls)
@@ -280,23 +268,17 @@ AVSessionPresetForUIVideoQuality (UIImagePickerControllerQualityType quality)
           forControlEvents: UIControlEventTouchUpInside];
 
     toolbar.items =
-        [NSArray arrayWithObjects:
-            [[[UIBarButtonItem alloc]
+        @[[[UIBarButtonItem alloc]
                  initWithBarButtonSystemItem: UIBarButtonSystemItemCancel
                  target: self
-                 action: @selector(cancel)]
-                autorelease],
-            [[[UIBarButtonItem alloc]
+                 action: @selector(cancel)],
+            [[UIBarButtonItem alloc]
                  initWithBarButtonSystemItem: UIBarButtonSystemItemFlexibleSpace
                  target: nil
-                 action: nil]
-                autorelease],
-            [[[UIBarButtonItem alloc]
-                 initWithCustomView: info]
-                autorelease],
-            nil];
+                 action: nil],
+            [[UIBarButtonItem alloc]
+                 initWithCustomView: info]];
     [controls addSubview: toolbar];
-    [toolbar release];
 
     [view addSubview: controls];
 }
@@ -522,11 +504,10 @@ AVSessionPresetForUIVideoQuality (UIImagePickerControllerQualityType quality)
     UIView *oldview = cameraOverlayView;
     [oldview removeFromSuperview];
 
-    cameraOverlayView = [newview retain];
-    if([self isViewLoaded] && newview)
+    cameraOverlayView = newview;
+    if(self.viewLoaded && newview)
         [self.view addSubview: newview];
 
-    [oldview release];
 }
 
 - (void) setCameraViewTransform: (CGAffineTransform) xfrm
@@ -639,7 +620,6 @@ AVSessionPresetForUIVideoQuality (UIImagePickerControllerQualityType quality)
 {
     if([tag isEqualToString: @"ZBarHelp"] && helpController) {
         [helpController.view removeFromSuperview];
-        [helpController release];
         helpController = nil;
     }
 }
@@ -654,10 +634,8 @@ AVSessionPresetForUIVideoQuality (UIImagePickerControllerQualityType quality)
     [readerDelegate
         imagePickerController: (UIImagePickerController*)self
         didFinishPickingMediaWithInfo:
-            [NSDictionary dictionaryWithObjectsAndKeys:
-                image, UIImagePickerControllerOriginalImage,
-                syms, ZBarReaderControllerResults,
-                nil]];
+            @{UIImagePickerControllerOriginalImage: image,
+                ZBarReaderControllerResults: syms}];
 }
 
 - (void) readerViewDidStart: (ZBarReaderView*) readerView

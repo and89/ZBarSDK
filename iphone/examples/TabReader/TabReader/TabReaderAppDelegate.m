@@ -31,14 +31,6 @@
     return(YES);
 }
 
-- (void) dealloc
-{
-    [_window release];
-    [_tabBarController release];
-    [super dealloc];
-}
-
-
 // ZBarReaderDelegate
 
 - (void)  imagePickerController: (UIImagePickerController*) picker

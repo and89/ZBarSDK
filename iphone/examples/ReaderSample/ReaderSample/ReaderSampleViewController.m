@@ -29,7 +29,6 @@
     // present and release the controller
     [self presentModalViewController: reader
                             animated: YES];
-    [reader release];
 }
 
 - (void) imagePickerController: (UIImagePickerController*) reader

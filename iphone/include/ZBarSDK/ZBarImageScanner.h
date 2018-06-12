@@ -37,7 +37,7 @@ using namespace zbar;
 }
 
 @property (nonatomic) BOOL enableCache;
-@property (readonly, nonatomic) ZBarSymbolSet *results;
+@property (weak, readonly, nonatomic) ZBarSymbolSet *results;
 
 // decoder configuration
 - (void) parseConfig: (NSString*) configStr;

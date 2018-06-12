@@ -32,14 +32,14 @@
       UIPopoverControllerDelegate >
 {
     UIViewController *viewController;
-    ZBarReaderView *readerView;
+    ZBarReaderView *__weak readerView;
     UIImagePickerController *picker;
     UIPopoverController *pickerPopover;
 }
 
-- (id) initWithViewController: (UIViewController*) viewController;
+- (instancetype) initWithViewController: (UIViewController*) viewController NS_DESIGNATED_INITIALIZER;
 - (void) takePicture;
 
-@property (nonatomic, assign) ZBarReaderView *readerView;
+@property (weak, nonatomic) ZBarReaderView *readerView;
 
 @end

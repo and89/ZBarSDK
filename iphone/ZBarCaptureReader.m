@@ -47,12 +47,11 @@ enum {
 
 - (void) initResult
 {
-    [result release];
     result = [ZBarCVImage new];
     result.format = [ZBarImage fourcc: @"CV2P"];
 }
 
-- (id) initWithImageScanner: (ZBarImageScanner*) _scanner
+- (instancetype) initWithImageScanner: (ZBarImageScanner*) _scanner
 {
     self = [super init];
     if(!self)
@@ -61,7 +60,7 @@ enum {
     t_fps = t_frame = timer_now();
     enableCache = YES;
 
-    scanner = [_scanner retain];
+    scanner = _scanner;
     scanCrop = CGRectMake(0, 0, 1, 1);
     image = [ZBarImage new];
     image.format = [ZBarImage fourcc: @"Y800"];
@@ -95,11 +94,10 @@ enum {
     return(self);
 }
 
-- (id) init
+- (instancetype) init
 {
     self = [self initWithImageScanner:
-               [[ZBarImageScanner new]
-                   autorelease]];
+               [ZBarImageScanner new]];
     if(!self)
         return(nil);
 
@@ -121,17 +119,9 @@ enum {
     // may not be null, even in this case...)
     [captureOutput setSampleBufferDelegate: nil
                    queue: queue];
-    [captureOutput release];
-    captureOutput = nil;
-    dispatch_release(queue);
 
-    [image release];
     image = nil;
-    [result release];
     result = nil;
-    [scanner release];
-    scanner = nil;
-    [super dealloc];
 }
 
 - (BOOL) enableReader
@@ -249,7 +239,7 @@ enum {
     if((_state & (PAUSED | RUNNING)) != RUNNING)
         return;
 
-    NSAutoreleasePool *pool = [NSAutoreleasePool new];
+    @autoreleasepool {
     image.sequence = framecnt++;
 
     uint64_t now = timer_now();
@@ -264,7 +254,7 @@ enum {
     dt_frame = (dt_frame + dt) / 2;
     if(timer_elapsed(t_fps, now) >= 1) {
         [self performSelectorOnMainThread: @selector(updateFPS:)
-              withObject: [NSNumber numberWithDouble: 1 / dt_frame]
+              withObject: @(1 / dt_frame)
               waitUntilDone: NO];
         t_fps = now;
     }
@@ -275,7 +265,7 @@ enum {
        !CMSampleBufferDataIsReady(samp) ||
        !buf) {
         zlog(@"ERROR: invalid sample");
-        goto error;
+        return;
     }
 
     OSType format = CVPixelBufferGetPixelFormatType(buf);
@@ -284,7 +274,7 @@ enum {
     if(format != kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange ||
        !planes) {
         zlog(@"ERROR: invalid buffer format");
-        goto error;
+        return;
     }
 
     int w = CVPixelBufferGetBytesPerRowOfPlane(buf, 0);
@@ -293,7 +283,7 @@ enum {
         CVPixelBufferLockBaseAddress(buf, kCVPixelBufferLock_ReadOnly);
     if(!w || !h || rc) {
         zlog(@"ERROR: invalid buffer data");
-        goto error;
+        return;
     }
 
     void *data = CVPixelBufferGetBaseAddressOfPlane(buf, 0);
@@ -313,9 +303,8 @@ enum {
                     CGSizeCreateDictionaryRepresentation(_size);
                 if(sized) {
                     [self performSelectorOnMainThread: @selector(updateSize:)
-                          withObject: (id)sized
+                                           withObject: (id)CFBridgingRelease(sized)
                           waitUntilDone: NO];
-                    CFRelease(sized);
                 }
                 image.size = _size;
                 [self cropUpdate];
@@ -362,9 +351,7 @@ enum {
     else
         zlog(@"ERROR: invalid data");
     CVPixelBufferUnlockBaseAddress(buf, kCVPixelBufferLock_ReadOnly);
-
- error:
-    [pool release];
+    }
 }
 
 @end

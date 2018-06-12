@@ -13,19 +13,15 @@
 
 - (void) cleanup
 {
-    [cameraSim release];
     cameraSim = nil;
     readerView.readerDelegate = nil;
-    [readerView release];
     readerView = nil;
-    [resultText release];
     resultText = nil;
 }
 
 - (void) dealloc
 {
     [self cleanup];
-    [super dealloc];
 }
 
 - (void) viewDidLoad

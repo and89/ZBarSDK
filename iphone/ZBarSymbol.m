@@ -28,12 +28,14 @@
 @dynamic type, typeName, configMask, modifierMask, data, quality, count,
     zbarSymbol;
 
+- (instancetype)init { @throw nil; }
+
 + (NSString*) nameForType: (zbar_symbol_type_t) type
 {
-    return([NSString stringWithUTF8String: zbar_get_symbol_name(type)]);
+    return(@(zbar_get_symbol_name(type)));
 }
 
-- (id) initWithSymbol: (const zbar_symbol_t*) sym
+- (instancetype) initWithSymbol: (const zbar_symbol_t*) sym
 {
     if(self = [super init]) {
         symbol = sym;
@@ -48,7 +50,6 @@
         zbar_symbol_ref(symbol, -1);
         symbol = NULL;
     }
-    [super dealloc];
 }
 
 - (zbar_symbol_type_t) type
@@ -73,7 +74,7 @@
 
 - (NSString*) data
 {
-    return([NSString stringWithUTF8String: zbar_symbol_get_data(symbol)]);
+    return(@(zbar_symbol_get_data(symbol)));
 }
 
 - (int) quality
@@ -98,9 +99,8 @@
 
 - (ZBarSymbolSet*) components
 {
-    return([[[ZBarSymbolSet alloc]
-                initWithSymbolSet: zbar_symbol_get_components(symbol)]
-               autorelease]);
+    return([[ZBarSymbolSet alloc]
+                initWithSymbolSet: zbar_symbol_get_components(symbol)]);
 }
 
 - (CGRect) bounds
@@ -131,10 +131,11 @@
 @dynamic count, zbarSymbolSet;
 @synthesize filterSymbols;
 
-- (id) initWithSymbolSet: (const zbar_symbol_set_t*) s
+- (instancetype)init { @throw nil; }
+
+- (instancetype) initWithSymbolSet: (const zbar_symbol_set_t*) s
 {
     if(!s) {
-        [self release];
         return(nil);
     }
     if(self = [super init]) {
@@ -151,7 +152,6 @@
         zbar_symbol_set_ref(set, -1);
         set = NULL;
     }
-    [super dealloc];
 }
 
 - (int) count
@@ -171,27 +171,26 @@
     return(set);
 }
 
-- (NSUInteger) countByEnumeratingWithState: (NSFastEnumerationState*) state
-                                   objects: (id*) stackbuf
-                                     count: (NSUInteger) len
+- (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(id  _Nullable __unsafe_unretained [])buffer count:(NSUInteger)len
 {
-    const zbar_symbol_t *sym = (void*)state->state; // FIXME
-    if(sym)
+    const zbar_symbol_t *sym = (const zbar_symbol_t *)state->state;
+    if (sym) {
         sym = zbar_symbol_next(sym);
-    else if(set && filterSymbols)
+    } else if (set && filterSymbols) {
         sym = zbar_symbol_set_first_symbol(set);
-    else if(set)
+    } else if (set) {
         sym = zbar_symbol_set_first_unfiltered(set);
-
-    if(sym)
-        *stackbuf = [[[ZBarSymbol alloc]
-                         initWithSymbol: sym]
-                        autorelease];
-
-    state->state = (unsigned long)sym; // FIXME
-    state->itemsPtr = stackbuf;
-    state->mutationsPtr = (void*)self;
-    return((sym) ? 1 : 0);
+    }
+    
+    if (sym) {
+        void * obj = (__bridge_retained void *)[[ZBarSymbol alloc] initWithSymbol:sym];
+        buffer[0] = (__bridge id)obj;
+    }
+    
+    state->state = (unsigned long)sym;
+    state->itemsPtr = buffer;
+    state->mutationsPtr = &state->extra[0];
+    return (sym ? 1 : 0);
 }
 
 @end

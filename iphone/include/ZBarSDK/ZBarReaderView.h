@@ -50,7 +50,7 @@
 @interface ZBarReaderView
     : UIView
 {
-    id<ZBarReaderViewDelegate> readerDelegate;
+    id<ZBarReaderViewDelegate> __weak readerDelegate;
     ZBarCaptureReader *captureReader;
     CGRect scanCrop, effectiveCrop;
     CGAffineTransform previewTransform;
@@ -71,7 +71,7 @@
 }
 
 // supply a pre-configured image scanner.
-- (id) initWithImageScanner: (ZBarImageScanner*) imageScanner;
+- (instancetype) initWithImageScanner: (ZBarImageScanner*) imageScanner NS_DESIGNATED_INITIALIZER;
 
 // start the video stream and barcode reader.
 - (void) start;
@@ -87,17 +87,17 @@
                                  duration: (NSTimeInterval) duration;
 
 // delegate is notified of decode results.
-@property (nonatomic, assign) id<ZBarReaderViewDelegate> readerDelegate;
+@property (nonatomic, weak) id<ZBarReaderViewDelegate> readerDelegate;
 
 // access to image scanner for configuration.
-@property (nonatomic, readonly) ZBarImageScanner *scanner;
+@property (weak, nonatomic, readonly) ZBarImageScanner *scanner;
 
 // whether to display the tracking annotation for uncertain barcodes
 // (default YES).
 @property (nonatomic) BOOL tracksSymbols;
 
 // color of the tracking box (default green)
-@property (nonatomic, retain) UIColor *trackingColor;
+@property (nonatomic, strong) UIColor *trackingColor;
 
 // enable pinch gesture recognition for zooming the preview/decode
 // (default YES).
@@ -128,11 +128,11 @@
 @property (nonatomic) CGAffineTransform previewTransform;
 
 // specify an alternate capture device.
-@property (nonatomic, retain) AVCaptureDevice *device;
+@property (nonatomic, strong) AVCaptureDevice *device;
 
 // direct access to the capture session.  warranty void if opened...
-@property (nonatomic, readonly) AVCaptureSession *session;
-@property (nonatomic, readonly) ZBarCaptureReader *captureReader;
+@property (nonatomic, readonly, strong) AVCaptureSession *session;
+@property (nonatomic, readonly, strong) ZBarCaptureReader *captureReader;
 
 // this flag still works, but its use is deprecated
 @property (nonatomic) BOOL enableCache;

@@ -27,7 +27,7 @@
 
 static void image_cleanup(zbar_image_t *zimg)
 {
-    ZBarImage *image = zbar_image_get_userdata(zimg);
+    ZBarImage *image = (__bridge ZBarImage *)(zbar_image_get_userdata(zimg));
     [image cleanup];
 }
 
@@ -38,24 +38,23 @@ static void image_cleanup(zbar_image_t *zimg)
 
 + (unsigned long) fourcc: (NSString*) format
 {
-    return(zbar_fourcc_parse([format UTF8String]));
+    return(zbar_fourcc_parse(format.UTF8String));
 }
 
-- (id) initWithImage: (zbar_image_t*) image
+- (instancetype) initWithImage: (zbar_image_t*) image
 {
     if(!image) {
-        [self release];
         return(nil);
     }
     if(self = [super init]) {
         zimg = image;
         zbar_image_ref(image, 1);
-        zbar_image_set_userdata(zimg, self);
+        zbar_image_set_userdata(zimg, (__bridge void *)(self));
     }
     return(self);
 }
 
-- (id) init
+- (instancetype) init
 {
     zbar_image_t *image = zbar_image_create();
     self = [self initWithImage: image];
@@ -69,10 +68,9 @@ static void image_cleanup(zbar_image_t *zimg)
         zbar_image_ref(zimg, -1);
         zimg = NULL;
     }
-    [super dealloc];
 }
 
-- (id) initWithCGImage: (CGImageRef) image
+- (instancetype) initWithCGImage: (CGImageRef) image
                   crop: (CGRect) crop
                   size: (CGSize) size
 {
@@ -86,7 +84,6 @@ static void image_cleanup(zbar_image_t *zimg)
     unsigned long datalen = w * h;
     uint8_t *raw = malloc(datalen);
     if(!raw) {
-        [self release];
         return(nil);
     }
 
@@ -124,7 +121,6 @@ static void image_cleanup(zbar_image_t *zimg)
                           initWithCGImage: cgdump];
     CGImageRelease(cgdump);
     UIImageWriteToSavedPhotosAlbum(uidump, nil, nil, NULL);
-    [uidump release];
 #endif
 
     CGContextRelease(ctx);
@@ -133,7 +129,7 @@ static void image_cleanup(zbar_image_t *zimg)
     return(self);
 }
 
-- (id) initWithCGImage: (CGImageRef) image
+- (instancetype) initWithCGImage: (CGImageRef) image
                   size: (CGSize) size
 {
     CGRect crop = CGRectMake(0, 0,
@@ -144,7 +140,7 @@ static void image_cleanup(zbar_image_t *zimg)
                  size: size]);
 }
 
-- (id) initWithCGImage: (CGImageRef) image
+- (instancetype) initWithCGImage: (CGImageRef) image
 {
     CGRect crop = CGRectMake(0, 0,
                              CGImageGetWidth(image),
@@ -206,14 +202,13 @@ static void image_cleanup(zbar_image_t *zimg)
 
 - (ZBarSymbolSet*) symbols
 {
-    return([[[ZBarSymbolSet alloc]
-                initWithSymbolSet: zbar_image_get_symbols(zimg)]
-               autorelease]);
+    return([[ZBarSymbolSet alloc]
+                initWithSymbolSet: zbar_image_get_symbols(zimg)]);
 }
 
 - (void) setSymbols: (ZBarSymbolSet*) symbols
 {
-    zbar_image_set_symbols(zimg, [symbols zbarSymbolSet]);
+    zbar_image_set_symbols(zimg, symbols.zbarSymbolSet);
 }
 
 - (const void*) data
@@ -267,7 +262,7 @@ static void image_cleanup(zbar_image_t *zimg)
     const void *data = zbar_image_get_data(zimg);
     size_t datalen = zbar_image_get_data_length(zimg);
     CGDataProviderRef datasrc =
-        CGDataProviderCreateWithData(self, data, datalen, (void*)CFRelease);
+        CGDataProviderCreateWithData((__bridge void * _Nullable)(self), data, datalen, (void*)CFRelease);
     CGColorSpaceRef cs = CGColorSpaceCreateDeviceRGB();
     CGImageRef cgimg =
         CGImageCreate(w, h, bpc, bpp, ((bpp + 7) >> 3) * w, cs,
@@ -299,7 +294,7 @@ static void image_cleanup(zbar_image_t *zimg)
 {
     zbar_image_t *zdst = zbar_image_convert(zimg, format);
     ZBarImage *image = ;
-    return([[[ZBarImage alloc] initWithImage: zdst] autorelease]);
+    return([[ZBarImage alloc] initWithImage: zdst]);
 }
 #endif
 

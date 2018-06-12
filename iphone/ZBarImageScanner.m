@@ -28,7 +28,7 @@
 
 @dynamic enableCache, results;
 
-- (id) init
+- (instancetype) init
 {
     if(self = [super init]) {
         scanner = zbar_image_scanner_create();
@@ -42,7 +42,6 @@
         zbar_image_scanner_destroy(scanner);
         scanner = NULL;
     }
-    [super dealloc];
 }
 
 - (BOOL) enableCache
@@ -59,13 +58,13 @@
 - (ZBarSymbolSet*) results
 {
     const zbar_symbol_set_t *set = zbar_image_scanner_get_results(scanner);
-    return([[[ZBarSymbolSet alloc] initWithSymbolSet: set] autorelease]);
+    return([[ZBarSymbolSet alloc] initWithSymbolSet: set]);
 }
 
 // image scanner config wrappers
 - (void) parseConfig: (NSString*) cfg
 {
-    zbar_image_scanner_parse_config(scanner, [cfg UTF8String]);
+    zbar_image_scanner_parse_config(scanner, cfg.UTF8String);
     // FIXME throw errors
 }
 

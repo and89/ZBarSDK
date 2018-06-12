@@ -45,13 +45,13 @@ using namespace zbar;
 @property (readonly, nonatomic) unsigned long dataLength;
 @property (copy, nonatomic) ZBarSymbolSet *symbols;
 @property (readonly, nonatomic) zbar_image_t *zbarImage;
-@property (readonly, nonatomic) UIImage *UIImage;
+@property (weak, readonly, nonatomic) UIImage *UIImage;
 
-- (id) initWithImage: (zbar_image_t*) image;
-- (id) initWithCGImage: (CGImageRef) image;
-- (id) initWithCGImage: (CGImageRef) image
+- (instancetype) initWithImage: (zbar_image_t*) image NS_DESIGNATED_INITIALIZER;
+- (instancetype) initWithCGImage: (CGImageRef) image;
+- (instancetype) initWithCGImage: (CGImageRef) image
                   size: (CGSize) size;
-- (id) initWithCGImage: (CGImageRef) image
+- (instancetype) initWithCGImage: (CGImageRef) image
                   crop: (CGRect) crop
                   size: (CGSize) size;
 

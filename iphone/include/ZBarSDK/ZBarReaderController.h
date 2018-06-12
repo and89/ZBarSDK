@@ -28,7 +28,7 @@
 using namespace zbar;
 #endif
 
-typedef enum {
+typedef NS_ENUM(unsigned int, ZBarReaderControllerCameraMode) {
     // default interface provided by UIImagePickerController - user manually
     // captures an image by pressing a button
     ZBarReaderControllerCameraModeDefault = 0,
@@ -44,7 +44,7 @@ typedef enum {
     // scanner
     ZBarReaderControllerCameraModeSequence,
 
-} ZBarReaderControllerCameraMode;
+};
 
 
 @class ZBarReaderController, ZBarHelpController;
@@ -74,7 +74,7 @@ typedef enum {
     UIBarButtonItem *cancelBtn, *scanBtn, *space[3];
     UIButton *infoBtn;
 
-    id <ZBarReaderDelegate> readerDelegate;
+    id <ZBarReaderDelegate> __weak readerDelegate;
     BOOL showsZBarControls, showsHelpOnFail, takesPicture, enableCache;
     ZBarReaderControllerCameraMode cameraMode;
     CGRect scanCrop;
@@ -91,7 +91,7 @@ typedef enum {
 @property (readonly, nonatomic) ZBarImageScanner *scanner;
 
 // barcode result recipient (NB don't use delegate)
-@property (nonatomic, assign) id <ZBarReaderDelegate> readerDelegate;
+@property (nonatomic, weak) id <ZBarReaderDelegate> readerDelegate;
 
 // whether to use alternate control set
 @property (nonatomic) BOOL showsZBarControls;

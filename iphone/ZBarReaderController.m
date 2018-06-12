@@ -51,7 +51,7 @@ CGImageRef UIGetScreenImage(void);
     showsHelpOnFail, takesPicture, enableCache, tracksSymbols;
 @dynamic showsZBarControls;
 
-- (id) init
+- (instancetype) init
 {
     if(self = [super init]) {
         showsHelpOnFail = YES;
@@ -131,7 +131,7 @@ CGImageRef UIGetScreenImage(void);
                     action: nil];
     space[2].width = r.size.width / 4 - 16;
 
-    infoBtn = [[UIButton buttonWithType: UIButtonTypeInfoLight] retain];
+    infoBtn = [UIButton buttonWithType: UIButtonTypeInfoLight];
     r.origin.x = r.size.width - 54;
     r.size.width = 54;
     infoBtn.frame = r;
@@ -143,32 +143,23 @@ CGImageRef UIGetScreenImage(void);
 - (void) viewDidLoad
 {
     [super viewDidLoad];
-    [super setDelegate: self];
+    super.delegate = self;
     if(hasOverlay)
         [self initOverlay];
 }
 
 - (void) cleanup
 {
-    [overlay release];
     overlay = nil;
-    [boxView release];
     boxView = nil;
-    [boxLayer release];
     boxLayer = nil;
-    [toolbar release];
     toolbar = nil;
-    [cancelBtn release];
     cancelBtn = nil;
-    [scanBtn release];
     scanBtn = nil;
     for(int i = 0; i < 3; i++) {
-        [space[i] release];
         space[i] = nil;
     }
-    [infoBtn release];
     infoBtn = nil;
-    [help release];
     help = nil;
 }
 
@@ -181,9 +172,6 @@ CGImageRef UIGetScreenImage(void);
 - (void) dealloc
 {
     [self cleanup];
-    [scanner release];
-    scanner = nil;
-    [super dealloc];
 }
 
 - (void) scan
@@ -210,10 +198,10 @@ CGImageRef UIGetScreenImage(void);
 {
     if(hasOverlay &&
        self.sourceType == UIImagePickerControllerSourceTypeCamera) {
-        if(showsZBarControls || ![self cameraOverlayView])
-            [self setCameraOverlayView: overlay];
+        if(showsZBarControls || !self.cameraOverlayView)
+            self.cameraOverlayView = overlay;
 
-        UIView *activeOverlay = [self cameraOverlayView];
+        UIView *activeOverlay = self.cameraOverlayView;
 
         if(showsZBarControls) {
             if(!toolbar.superview) {
@@ -235,8 +223,7 @@ CGImageRef UIGetScreenImage(void);
                     cameraMode == ZBarReaderControllerCameraModeSequence);
 
         if(sampling) {
-            toolbar.items = [NSArray arrayWithObjects:
-                                cancelBtn, space[0], nil];
+            toolbar.items = @[cancelBtn, space[0]];
 
             t_frame = timer_now();
             dt_frame = 0;
@@ -269,8 +256,7 @@ CGImageRef UIGetScreenImage(void);
         }
         else {
             scanBtn.enabled = NO;
-            toolbar.items = [NSArray arrayWithObjects:
-                        cancelBtn, space[0], scanBtn, space[1], space[2], nil];
+            toolbar.items = @[cancelBtn, space[0], scanBtn, space[1], space[2]];
 
             [self performSelector: @selector(reenable)
                   withObject: nil
@@ -402,7 +388,6 @@ CGImageRef UIGetScreenImage(void);
                           crop: crop
                           size: size];
     int nsyms = [scanner scanImage: zimg];
-    [zimg release];
 
     return(nsyms);
 }
@@ -528,7 +513,6 @@ CGImageRef UIGetScreenImage(void);
                 [NSArray arrayWithObject: symbol],
                     ZBarReaderControllerResults,
                 nil]];
-    [symbol release];
     symbol = nil;
 
     // continue scanning until dismissed
@@ -542,7 +526,6 @@ CGImageRef UIGetScreenImage(void);
 - (void) scanSequence: (UIImage*) image
 {
     if(!sampling) {
-        [image release];
         return;
     }
 
@@ -559,13 +542,9 @@ CGImageRef UIGetScreenImage(void);
         [readerDelegate
             imagePickerController: self
             didFinishPickingMediaWithInfo:
-                [NSDictionary dictionaryWithObjectsAndKeys:
-                    image, UIImagePickerControllerOriginalImage,
-                    [NSArray arrayWithObject: sym],
-                        ZBarReaderControllerResults,
-                    nil]];
+                @{UIImagePickerControllerOriginalImage: image,
+                    ZBarReaderControllerResults: @[sym]}];
     CGSize size = image.size;
-    [image release];
 
     // reschedule
     [self performSelector: @selector(takePicture)
@@ -581,7 +560,6 @@ CGImageRef UIGetScreenImage(void);
 {
     if(help) {
         [help.view removeFromSuperview];
-        [help release];
     }
     help = [[ZBarHelpController alloc]
                initWithReason: reason];
@@ -599,7 +577,7 @@ CGImageRef UIGetScreenImage(void);
     help.wantsFullScreenLayout = YES;
     help.view.alpha = 0;
 
-    UIView *activeOverlay = [self cameraOverlayView];
+    UIView *activeOverlay = self.cameraOverlayView;
     help.view.frame = [activeOverlay
                           convertRect: CGRectMake(0, 0, 320, 480)
                           fromView: nil];
@@ -618,22 +596,21 @@ CGImageRef UIGetScreenImage(void);
 - (void)  imagePickerController: (UIImagePickerController*) picker
   didFinishPickingMediaWithInfo: (NSDictionary*) info
 {
-    UIImage *img = [info objectForKey: UIImagePickerControllerOriginalImage];
+    UIImage *img = info[UIImagePickerControllerOriginalImage];
 
     id results = nil;
     if(self.sourceType == UIImagePickerControllerSourceTypeCamera &&
        cameraMode == ZBarReaderControllerCameraModeSequence) {
         if(sampling)
             [self performSelector: @selector(scanSequence:)
-                  withObject: [img retain]
+                  withObject: img
                   afterDelay: 0.001];
         return;
     }
     else if(!sampling)
         results = [self scanImage: img.CGImage];
     else {
-        results = [NSArray arrayWithObject: symbol];
-        [symbol release];
+        results = @[symbol];
         symbol = nil;
     }
 
@@ -643,20 +620,18 @@ CGImageRef UIGetScreenImage(void);
 
     if(results) {
         NSMutableDictionary *newinfo = [info mutableCopy];
-        [newinfo setObject: results
-                 forKey: ZBarReaderControllerResults];
+        newinfo[ZBarReaderControllerResults] = results;
         SEL cb = @selector(imagePickerController:didFinishPickingMediaWithInfo:);
         if([readerDelegate respondsToSelector: cb])
             [readerDelegate imagePickerController: self
                             didFinishPickingMediaWithInfo: newinfo];
         else
             [self dismissModalViewControllerAnimated: YES];
-        [newinfo release];
         return;
     }
 
     BOOL camera = (self.sourceType == UIImagePickerControllerSourceTypeCamera);
-    BOOL retry = !camera || (hasOverlay && ![self showsCameraControls]);
+    BOOL retry = !camera || (hasOverlay && !self.showsCameraControls);
     if(showsHelpOnFail && retry)
         [self showHelpWithReason: @"FAIL"];
 

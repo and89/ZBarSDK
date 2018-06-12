@@ -44,7 +44,7 @@
     : UIViewController
 {
     ZBarImageScanner *scanner;
-    id <ZBarReaderDelegate> readerDelegate;
+    id <ZBarReaderDelegate> __weak readerDelegate;
     ZBarReaderView *readerView;
     UIView *cameraOverlayView;
     CGAffineTransform cameraViewTransform;
@@ -65,7 +65,7 @@
 @property (nonatomic, readonly) ZBarImageScanner *scanner;
 
 // barcode result recipient
-@property (nonatomic, assign) id <ZBarReaderDelegate> readerDelegate;
+@property (nonatomic, weak) id <ZBarReaderDelegate> readerDelegate;
 
 // whether to use alternate control set
 @property (nonatomic) BOOL showsZBarControls;
@@ -87,7 +87,7 @@
 
 // provide a custom overlay.  note that this can be used with
 // showsZBarControls enabled (but not if you want backward compatibility)
-@property (nonatomic, retain) UIView *cameraOverlayView;
+@property (nonatomic, strong) UIView *cameraOverlayView;
 
 // transform applied to the preview image.
 @property (nonatomic) CGAffineTransform cameraViewTransform;

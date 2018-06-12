@@ -30,10 +30,9 @@
 
 @synthesize readerView;
 
-- (id) initWithViewController: (UIViewController*) vc
+- (instancetype) initWithViewController: (UIViewController*) vc
 {
     if(!TARGET_IPHONE_SIMULATOR) {
-        [self release];
         return(nil);
     }
     self = [super init];
@@ -49,18 +48,14 @@
 {
     viewController = nil;
     readerView = nil;
-    [picker release];
     picker = nil;
-    [pickerPopover release];
     pickerPopover = nil;
-    [super dealloc];
 }
 
 - (void) setReaderView: (ZBarReaderView*) view
 {
     ZBarReaderView *oldView = readerView;
-    readerView = [view retain];
-    [oldView release];
+    readerView = view;
 
     UILongPressGestureRecognizer *gesture =
         [[UILongPressGestureRecognizer alloc]
@@ -68,7 +63,6 @@
             action: @selector(didLongPress:)];
     gesture.numberOfTouchesRequired = 2;
     [view addGestureRecognizer: gesture];
-    [gesture release];
 }
 
 - (void) didLongPress: (UILongPressGestureRecognizer*) gesture
@@ -100,7 +94,7 @@
 - (void)  imagePickerController: (UIImagePickerController*) _picker
   didFinishPickingMediaWithInfo: (NSDictionary*) info
 {
-    UIImage *image = [info objectForKey: UIImagePickerControllerOriginalImage];
+    UIImage *image = info[UIImagePickerControllerOriginalImage];
 
     if(UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
         [pickerPopover dismissPopoverAnimated: YES];

@@ -42,7 +42,6 @@
 @interface ZBarReaderViewImpl
     : ZBarReaderView
 {
-    AVCaptureSession *session;
     AVCaptureDevice *device;
     AVCaptureInput *input;
 }
@@ -103,9 +102,8 @@
 - (void) initSubviews
 {
     AVCaptureVideoPreviewLayer *videoPreview =
-        [[AVCaptureVideoPreviewLayer
-             layerWithSession: session]
-            retain];
+        [AVCaptureVideoPreviewLayer
+             layerWithSession: session];
     preview = videoPreview;
     CGRect bounds = self.bounds;
     bounds.origin = CGPointZero;
@@ -135,15 +133,9 @@
     }
     @catch(...) { }
     captureReader.captureDelegate = nil;
-    [captureReader release];
     captureReader = nil;
-    [device release];
-    device = nil;
-    [input release];
     input = nil;
-    [session release];
     session = nil;
-    [super dealloc];
 }
 
 - (void) updateCrop
@@ -164,7 +156,7 @@
     assert(!olddev == !oldinput);
 
     NSError *error = nil;
-    device = [newdev retain];
+    device = newdev;
     if(device) {
         assert([device hasMediaType: AVMediaTypeVideo]);
         input = [[AVCaptureDeviceInput alloc]
@@ -181,9 +173,6 @@
     if(input)
         [session addInput: input];
     [session commitConfiguration];
-
-    [olddev release];
-    [oldinput release];
 }
 
 - (BOOL) enableCache
@@ -198,7 +187,7 @@
 
 - (void) setTorchMode: (NSInteger) mode
 {
-    [super setTorchMode: mode];
+    super.torchMode = mode;
     if(running && [device isTorchModeSupported: mode])
         @try {
             device.torchMode = mode;
@@ -208,7 +197,7 @@
 
 - (void) setShowsFPS: (BOOL) show
 {
-    [super setShowsFPS: show];
+    super.showsFPS = show;
     @try {
         if(show)
             [captureReader addObserver: self
@@ -324,7 +313,7 @@
         [device unlockForConfiguration];
     }
     NSError *err =
-        [note.userInfo objectForKey: AVCaptureSessionErrorKey];
+        (note.userInfo)[AVCaptureSessionErrorKey];
 
     if([readerDelegate respondsToSelector:
                            @selector(readerView:didStopWithError:)])
@@ -332,8 +321,8 @@
                         didStopWithError: err];
     else
         NSLog(@"ZBarReaderView: ERROR during capture: %@: %@",
-              [err localizedDescription],
-              [err localizedFailureReason]);
+              err.localizedDescription,
+              err.localizedFailureReason);
 }
 
 // NSKeyValueObserving
